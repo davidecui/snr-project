@@ -10,27 +10,27 @@ public class ServerThread extends Thread {
     }
 
     public void run() {
+		try {
+		    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	
+		    String outputLine = null;
+		    
+		    System.out.println("Waiting");
+	
+		    do {
+		    	outputLine = in.readLine();	
+		    	out.println(outputLine);
+		    } while (!outputLine.equals("Bye")); 
 
-	try {
-	    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-	    BufferedReader in = new BufferedReader(
-				    new InputStreamReader(
-				    socket.getInputStream()));
+		    out.close();
+		    in.close();
+		    socket.close();
+	
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	    System.out.println("Exiting");
 
-	    String inputLine, outputLine = "a";
-	    out.println(outputLine);
-
-	    while ((inputLine = in.readLine()) != null) {
-		out.println(outputLine);
-		if (outputLine.equals("Bye"))
-		    break;
-	    }
-	    out.close();
-	    in.close();
-	    socket.close();
-
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
     }
 }

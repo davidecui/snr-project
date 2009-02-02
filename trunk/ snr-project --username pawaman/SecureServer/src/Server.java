@@ -7,10 +7,13 @@ public class Server {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		final int listen_port = 2009;
+		
+		
 		ServerSocket ssocket;
 		boolean listening = true; 
 		try {
-		    ssocket = new ServerSocket(2009);
+		    ssocket = new ServerSocket(listen_port);
 			while (listening)
 	    	    new ServerThread(ssocket.accept()).start();
 	            ssocket.close();
