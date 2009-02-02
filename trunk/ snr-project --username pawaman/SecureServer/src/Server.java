@@ -14,9 +14,8 @@ public class Server {
 		boolean listening = true; 
 		try {
 		    ssocket = new ServerSocket(listen_port);
-			while (listening)
-	    	    new ServerThread(ssocket.accept()).start();
-	            ssocket.close();
+			while (listening) new ServerThread(ssocket.accept()).start();
+	        ssocket.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
