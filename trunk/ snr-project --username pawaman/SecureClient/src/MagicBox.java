@@ -2,6 +2,7 @@
 	import java.security.spec.*;
 
 	import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 
@@ -13,31 +14,35 @@ public class MagicBox {
 	private byte[] privateKeyBytes;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
+	private SecretKey sessionKey;
 	private X509EncodedKeySpec ksx509;
 	private PKCS8EncodedKeySpec kspkcs8;
+	private SecretKeySpec sessionKeySpec;
 	private KeyFactory kf;
+	private KeyGenerator kg;
 	private Cipher c;
+	byte[] error = {-1};
 
-	public MagicBox(String pathPub, String pathPri){
+
+	public MagicBox(String pathPub, String pathPri, boolean sessionKey_enabled){
+		int i;
 		try {
 			kf = KeyFactory.getInstance("RSA");
-			if (pathPub != null){
-				fis = new FileInputStream(pathPub);
-				baos = new ByteArrayOutputStream();
-				int i = 0;
-				while((i = fis.read()) != -1) {
-					baos.write(i);
-				}
-				fis.close();
-				publicKeyBytes = baos.toByteArray();
-				baos.close();
-				ksx509 = new X509EncodedKeySpec(publicKeyBytes);
-				publicKey = kf.generatePublic(ksx509);
+			fis = new FileInputStream(pathPub);
+			baos = new ByteArrayOutputStream();
+			i = 0;
+			while((i = fis.read()) != -1) {
+				baos.write(i);
 			}
+			fis.close();
+			publicKeyBytes = baos.toByteArray();
+			baos.close();
+			ksx509 = new X509EncodedKeySpec(publicKeyBytes);
+			publicKey = kf.generatePublic(ksx509);
 			if (pathPri != null){
 				fis = new FileInputStream(pathPri);
 				baos = new ByteArrayOutputStream();
-				int i = 0;
+				i = 0;
 				while((i = fis.read()) != -1) {
 					baos.write(i);
 				}
@@ -47,52 +52,102 @@ public class MagicBox {
 				kspkcs8 = new PKCS8EncodedKeySpec(privateKeyBytes);
 				privateKey = kf.generatePrivate(kspkcs8);
 			}
+			if (sessionKey_enabled){
+				kg = KeyGenerator.getInstance("AES");
+				kg.init(128);
+				sessionKey = kg.generateKey();
+				byte[] rawKey = sessionKey.getEncoded();
+				sessionKeySpec = new SecretKeySpec(rawKey, "AES");
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public byte[] codifica(String testo){
-		char[] plainText;
-		byte[] zero = {0};
-		plainText = testo.toCharArray();
-		
-		byte[] byteText = new byte[plainText.length];
-
-		for (int i = 0; i < plainText.length; i++) byteText[i] = (byte) plainText[i];
+	public void setSessionKey(byte[] rawKey){
+		sessionKeySpec = new SecretKeySpec(rawKey, "AES");
+	}
+	
+	public byte[] RSAEncode(byte[] plainContent){
+		byte[] encryptContent = null;
 		
 		try {
 			c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			c.init(Cipher.ENCRYPT_MODE, publicKey);
-
-			byteText = c.doFinal(byteText);
-
+			encryptContent = c.doFinal(plainContent);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		if (byteText != null) return byteText;
-		return zero;
+		if (encryptContent != null) return encryptContent;
+		return error;
 
 	}
 	
-	public String decodifica(byte[] encryptText){
-		byte[] byteText = null;
+	public byte[] RSAEncode(String plainText){
+		char[] plainChar = plainText.toCharArray();
+		byte[] plainByte = new byte[plainChar.length];
+		
+		for (int i = 0; i < plainChar.length; i++) plainByte[i] = (byte) plainChar[i];
+		
+		return RSAEncode(plainByte);
+	}
+	
+	public byte[] RSADecode(byte[] encryptContent){
+		byte[] plainContent = null;
 		try {
 			c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			c.init(Cipher.DECRYPT_MODE, privateKey);
-			byteText = c.doFinal(encryptText);
+			plainContent = c.doFinal(encryptContent);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		char[] plainText = new char[byteText.length];
+		if (plainContent != null) return plainContent;
+		return error;
+	}
 
-		for (int i = 0; i < byteText.length; i++) plainText[i] = (char) byteText[i];
+	public byte[] SessionEncode(byte[] plainContent){
+		byte[] encryptContent = null;
+		try {
+			c = Cipher.getInstance("AES");
+			c.init(Cipher.ENCRYPT_MODE, sessionKeySpec);
+			encryptContent = c.doFinal(plainContent);
 
-		return String.valueOf(plainText);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (encryptContent != null) return encryptContent;
+		return error;
+	}
+	
+	
+	public byte[] SessionEncode(String plainText){
+		char[] plainChar = plainText.toCharArray();
+		byte[] plainByte = new byte[plainChar.length];
+		
+		for (int i = 0; i < plainChar.length; i++) plainByte[i] = (byte) plainChar[i];
+		
+		return SessionEncode(plainByte);
+		
+	}
+	
+	public byte[] SessionDecode(byte[] encryptContent){
+		byte[] plainContent = null;
+		try {
+			c = Cipher.getInstance("AES");
+			c.init(Cipher.DECRYPT_MODE, sessionKeySpec);
+			plainContent = c.doFinal(encryptContent);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (plainContent != null) return plainContent;
+		return error;
+		
 	}
 }
