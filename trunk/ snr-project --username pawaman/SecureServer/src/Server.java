@@ -14,7 +14,10 @@ public class Server {
 		boolean listening = true; 
 		try {
 		    ssocket = new ServerSocket(listen_port);
-			while (listening) new ServerThread(ssocket.accept()).start();
+			while (listening){
+				System.out.println("Attending new connections");
+				new ServerThread(ssocket.accept()).start();
+			}
 	        ssocket.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
