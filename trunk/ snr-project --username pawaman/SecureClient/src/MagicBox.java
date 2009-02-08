@@ -12,9 +12,10 @@ public class MagicBox {
 	private ByteArrayOutputStream baos;
 	private byte[] publicKeyBytes;
 	private byte[] privateKeyBytes;
+	private byte[] rawKey;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
-	private SecretKey sessionKey;
+	private Key sessionKey;
 	private X509EncodedKeySpec ksx509;
 	private PKCS8EncodedKeySpec kspkcs8;
 	private SecretKeySpec sessionKeySpec;
@@ -56,7 +57,7 @@ public class MagicBox {
 				kg = KeyGenerator.getInstance("AES");
 				kg.init(128);
 				sessionKey = kg.generateKey();
-				byte[] rawKey = sessionKey.getEncoded();
+				rawKey = sessionKey.getEncoded();
 				sessionKeySpec = new SecretKeySpec(rawKey, "AES");
 			}
 		} catch (Exception e) {
@@ -67,6 +68,10 @@ public class MagicBox {
 	
 	public void setSessionKey(byte[] rawKey){
 		sessionKeySpec = new SecretKeySpec(rawKey, "AES");
+	}
+	
+	public byte[] getSessionKey(){
+		return sessionKeySpec.getEncoded();
 	}
 	
 	public byte[] RSAEncode(byte[] plainContent){
@@ -150,4 +155,19 @@ public class MagicBox {
 		return error;
 		
 	}
+	
+	public String getStringFromByte(byte[] b){
+		char[] c = new char[b.length];
+		for(int i = 0; i < b.length; i++) c[i] = (char) b[i]; 
+		return String.copyValueOf(c);
+
+	}
+	
+	public byte[] concat(byte[] A, byte[] B) {
+		   byte[] C= new byte[A.length+B.length];
+		   System.arraycopy(A, 0, C, 0, A.length);
+		   System.arraycopy(B, 0, C, A.length, B.length);
+		   return C;
+		}
+
 }
