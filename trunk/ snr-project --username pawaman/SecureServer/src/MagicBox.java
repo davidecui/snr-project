@@ -1,10 +1,8 @@
 	import java.security.*;
 	import java.security.spec.*;
-
 	import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
-
-import java.io.*;
+	import javax.crypto.spec.SecretKeySpec;
+	import java.io.*;
 
 
 public class MagicBox {
