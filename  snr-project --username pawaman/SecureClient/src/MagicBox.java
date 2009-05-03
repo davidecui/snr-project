@@ -168,4 +168,16 @@ public class MagicBox {
 		   return C;
 		}
 
+	public byte[] subPad(byte[] padded) {
+    	int newlenght = 0;
+    	for (int i = padded.length - 1; i > 0; i--) 
+    		if (padded[i] != (byte) 0x00){
+    			newlenght = i+1;
+    			break;
+    		}
+    	byte[] noPadded = new byte[newlenght];
+    	for (int i = 0; i < noPadded.length; i++) noPadded[i] = padded[i];
+    	return noPadded;
+	}
+
 }

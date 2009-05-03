@@ -51,14 +51,7 @@ public class Client {
     	for (int i = 0; i < byteResp.length; i++) byteResp[i] = (byte) 0x00;
     	in.read(byteResp);
     	System.out.println("original response: " + byteResp);
-    	int newlenght = 0;
-    	for (int i = byteResp.length - 1; i > 0; i--) 
-    		if (byteResp[i] != (byte) 0x00){
-    			newlenght = i+1;
-    			break;
-    		}
-    	byte[] respNoPad = new byte[newlenght];
-    	for (int i = 0; i < respNoPad.length; i++) respNoPad[i] = byteResp[i];
+    	byte[] respNoPad = mb.subPad(byteResp);
     	respNoPad = mb.SessionDecode(respNoPad);
 		response = mb.getStringFromByte(respNoPad);
     	System.out.println("Decoded Message:\n-------\n" + response + "\n-------\n");
