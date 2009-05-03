@@ -1,10 +1,15 @@
+import java.awt.Image;
+import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 
 public class SecureConnection {
@@ -82,12 +87,40 @@ public class SecureConnection {
 		}
 	}
 	
-	public void secureSend(){
+	public void secureSend(String mess){
+    	byte[] word = mb.SessionEncode(mess.getBytes());
+    	try {
+			out.write(word);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void SecureSend(Image img){
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	try {
+    		ImageIO.write((RenderedImage) img, "JPG", out);
+    		byte[] imageBytes = mb.SessionEncode(out.toByteArray()); 
+			out.write(imageBytes);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		
 	}
 	
-	public void secureReceive(){
-		
+	public Object secureReceive(){
+		byte[] word = new byte[150000];
+    	try {
+			in.read(word);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return mb.getStringFromByte(mb.SessionDecode(mb.subPad(word)));
 	}
 
 }
