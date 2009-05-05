@@ -1,11 +1,9 @@
 import java.awt.Image;
 import java.awt.image.RenderedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Random;
 
@@ -20,8 +18,9 @@ public class SecureConnection {
 	private DataInputStream in;
 	private String response;
    	private MagicBox mb;
-	private Random rand;
-	private byte[] nonce = new byte[16];
+	private Random rand = new Random();
+	private double na;
+	private String nb;
 
 	public SecureConnection() {
         try {
@@ -37,11 +36,13 @@ public class SecureConnection {
 	}
 	
 	public void initialize(){
-		// PASSO 1: C -> S | C, S, Es(C, S, P, Na, Ks)
-        String message = 	"FROM: client\n" +
+
+// PASSO 1: C -> S | C, S, Es(C, S, P, Na, Ks)
+		na = rand.nextDouble();
+        String message = 	"FROM: utente1\n" +
         					"TO: server\n" +
-        					"PSSW: password\n" +
-        					"NA: " + nonce;
+        					"PSSW: password1\n" +
+        					"NA: " + na;
         byte[] plainMessage = mb.concat(mb.getSessionKey(), message.getBytes());
         byte[] encMessage = mb.RSAEncode(plainMessage);
         try {
@@ -60,31 +61,30 @@ public class SecureConnection {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	int newlenght = 0;
-    	for (int i = byteResp.length - 1; i > 0; i--) 
-    		if (byteResp[i] != (byte) 0x00){
-    			newlenght = i+1;
-    			break;
-    		}
-    	byte[] respNoPad = new byte[newlenght];
-    	for (int i = 0; i < respNoPad.length; i++) respNoPad[i] = byteResp[i];
+    	byte[] respNoPad = mb.subPad(byteResp);
     	respNoPad = mb.SessionDecode(respNoPad);
 		response = mb.getStringFromByte(respNoPad);
+		
+    	String [] d = response.split("\n");
+    	String na_test = d[2].subSequence(4, d[2].length()).toString();
+    	nb = d[3].subSequence(4, d[3].length()).toString();
 
+    	if (Double.parseDouble(na_test) == na){
 // PASSO 3: C -> S | C, S, Es(C, S, P, Na, Nb)
-        message = 	"FROM: client\n" +
-					"TO: server\n" +
-					"PSSW: password\n" +
-					"NA: 12345 \n" +
-					"NB: 54321";			
-        plainMessage = message.getBytes();
-        encMessage = mb.RSAEncode(plainMessage);
-        try {
-			out.write(encMessage);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	        message = 	"FROM: utente1\n" +
+						"TO: server\n" +
+						"PSSW: password1\n" +
+						"NA: "+na+"\n" +
+						"NB: "+nb;			
+	        plainMessage = message.getBytes();
+	        encMessage = mb.RSAEncode(plainMessage);
+	        try {
+				out.write(encMessage);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
 	}
 	
 	public void secureSend(String mess){
@@ -113,7 +113,7 @@ public class SecureConnection {
 	}
 	
 	public Object secureReceive(){
-		byte[] word = new byte[150000];
+		byte[] word = new byte[153600];
     	try {
 			in.read(word);
 		} catch (IOException e) {
