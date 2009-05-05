@@ -17,9 +17,6 @@ public class PairGenerator {
 		String publicKeyFile = "../SecureServer/etc/publicKey.jks";
         String privateKeyFile = "../SecureServer/etc/privateKey.jks";;
 
-        File filePubblico;
-        File filePrivato;
-
         try {
         	
             FileOutputStream fosu = new FileOutputStream(publicKeyFile);
