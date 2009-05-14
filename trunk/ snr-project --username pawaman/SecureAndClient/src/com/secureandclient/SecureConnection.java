@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class SecureConnection {
 	private final int port = 2009;
-	private final String host = "localhost";
+	private final String host = "192.168.0.143";
 	private Socket socket;
 	private DataOutputStream out;
 	private DataInputStream in;
@@ -21,7 +21,7 @@ public class SecureConnection {
 
 	public SecureConnection() {
         try {
-        	mb = new MagicBox("../SecureClient/etc/publicKey.jks", null, true);
+        	mb = new MagicBox("/data/data/com.secureandclient/lib/publicKey.jks", null, true);
 			socket = new Socket(host, port);
 	        out = new DataOutputStream(socket.getOutputStream());
 	        in = new DataInputStream(socket.getInputStream());
