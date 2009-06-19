@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
 
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
 
 
 public class SecureConnection {
 	private final int port = 2009;
-	private final String host = "192.168.0.143";
+	private final String host = "192.168.0.201";
 	private Socket socket;
 	private DataOutputStream out;
 	private DataInputStream in;
@@ -97,13 +100,18 @@ public class SecureConnection {
 	
 	public Object secureReceive(){
 		byte[] word = new byte[153600];
+		for (int i = 0; i < word.length; i++) word[i] = (byte) 0x00;
     	try {
 			in.read(word);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	return mb.getStringFromByte(mb.SessionDecode(mb.subPad(word)));
-	}
+//    	return mb.getStringFromByte(mb.SessionDecode(mb.subPad(word)));
+		byte[] test = mb.subPad(word);
+		Log.d("SECURECONNECTION", String.valueOf(test.length));
+		word = mb.SessionDecode(test);
+    	return BitmapFactory.decodeByteArray(word, 0, word.length);
+    }
 
 }
