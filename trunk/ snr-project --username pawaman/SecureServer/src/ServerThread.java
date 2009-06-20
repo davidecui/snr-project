@@ -76,17 +76,18 @@ public class ServerThread extends Thread {
 				    System.out.println("Waiting");
 				    String r = null;
 			    	int newlenght = 0;
-			    	byte[] respNoPad = new byte[newlenght];
 			    	String s = new String();
 			    	do {
 			    		clientLine = new byte[153600];
 			        	try {
-			    			in.read(clientLine);
+			    			newlenght = in.read(clientLine);
 			    		} catch (IOException e) {
 			    			// TODO Auto-generated catch block
 			    			e.printStackTrace();
 			    		}
-				    	respNoPad = mb.subPad(clientLine);
+				    	byte[] respNoPad = new byte[newlenght];
+				    	//respNoPad = mb.subPad(clientLine);
+				    	System.arraycopy(clientLine, 0, respNoPad, 0, respNoPad.length);
 				    	clientLine = mb.SessionDecode(respNoPad);
 				    	r = mb.getStringFromByte(clientLine);
 				    	System.out.println("Client input: " + r);
@@ -97,9 +98,9 @@ public class ServerThread extends Thread {
 				    	FileInputStream fis = new FileInputStream("../SecureServer/etc/" + r + ".jpg");
 				    	byte[] buffer = new byte[fis.available()];
 				    	fis.read(buffer);
-				    	byte[] aa = mb.SessionEncode(buffer);
-				    	System.out.println(aa.length);
-				    	out.write(aa);
+				    	byte[] encoded = mb.SessionEncode(buffer);
+				    	System.out.println(encoded.length);
+				    	out.write(encoded);
 				    	System.out.println(r+".jpg sent");
 				    } while (!r.equals("Bye"));
 		    	}

@@ -167,7 +167,7 @@ public class MagicBox {
 		   System.arraycopy(B, 0, C, A.length, B.length);
 		   return C;
 		}
-
+/*
 	public byte[] subPad(byte[] padded) {
     	int newlenght = padded.length;
     	for (int i = padded.length - 1; i > 0; i--){ 
@@ -178,5 +178,5 @@ public class MagicBox {
     	for (int i = 0; i < noPadded.length; i++) noPadded[i] = padded[i];
     	return noPadded;
 	}
-
+*/
 }
