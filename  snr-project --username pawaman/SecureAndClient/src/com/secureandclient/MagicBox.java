@@ -168,16 +168,13 @@ public class MagicBox {
 		   System.arraycopy(B, 0, C, A.length, B.length);
 		   return C;
 		}
-
+/*
 	public byte[] subPad(byte[] padded) {
     	int newlenght = padded.length;
-    	for (int i = padded.length - 1; i > 0; i--){ 
-    		if (padded[i] != (byte) 0x00) break;
-    		newlenght --;
-    	}
+    	while(padded[newlenght - 1] == (byte) 0x00) newlenght--;
     	byte[] noPadded = new byte[newlenght];
-    	for (int i = 0; i < noPadded.length; i++) noPadded[i] = padded[i];
+    	System.arraycopy(padded, 0, noPadded, 0, noPadded.length);
     	return noPadded;
 	}
-
+*/
 }

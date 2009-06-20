@@ -21,6 +21,7 @@ public class SecureConnection {
 	private Random rand = new Random();
 	private double na;
 	private String nb;
+	private byte[] buffer = new byte[102400];
 
 	public SecureConnection() {
         try {
@@ -32,6 +33,7 @@ public class SecureConnection {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		bytefill(buffer, (byte) 0x00);
 
 	}
 	
@@ -54,14 +56,16 @@ public class SecureConnection {
 
 // PASSO 2: S -> C | C, S, Ks(C, S, Na, Nb)
     	byte[] byteResp = new byte[128];
-    	for (int i = 0; i < byteResp.length; i++) byteResp[i] = (byte) 0x00;
+    	bytefill(byteResp, (byte) 0x00);
+    	int readed = 0;
     	try {
-			in.read(byteResp);
+			readed = in.read(byteResp);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	byte[] respNoPad = mb.subPad(byteResp);
+    	byte[] respNoPad = new byte[readed];
+    	System.arraycopy(byteResp, 0, respNoPad, 0, respNoPad.length);
     	respNoPad = mb.SessionDecode(respNoPad);
 		response = mb.getStringFromByte(respNoPad);
 		
@@ -99,19 +103,27 @@ public class SecureConnection {
 	}
 	
 	public Object secureReceive(){
-		byte[] word = new byte[153600];
-		for (int i = 0; i < word.length; i++) word[i] = (byte) 0x00;
-    	try {
-			in.read(word);
+		int hmr = 0;
+		try {
+			System.gc();
+			hmr = in.read(buffer);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//    	return mb.getStringFromByte(mb.SessionDecode(mb.subPad(word)));
-		byte[] test = mb.subPad(word);
-		Log.d("SECURECONNECTION", String.valueOf(test.length));
-		word = mb.SessionDecode(test);
-    	return BitmapFactory.decodeByteArray(word, 0, word.length);
+		Log.d("SECURECONNECTION", "readed: " + hmr);
+		byte temp[] = new byte[hmr];
+	    System.arraycopy(buffer, 0, temp, 0, temp.length);
+		bytefill(buffer, (byte) 0x00);
+		byte[] decoded = mb.SessionDecode(temp);
+    	return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
     }
-
+	
+   public static void bytefill(byte[] array, byte value) {
+	   int len = array.length;
+	   if (len > 0)
+	   array[0] = value;
+	   for (int i = 1; i < len; i += i)
+	       System.arraycopy( array, 0, array, i, ((len - i) < i) ? (len - i) : i);
+   }
 }
