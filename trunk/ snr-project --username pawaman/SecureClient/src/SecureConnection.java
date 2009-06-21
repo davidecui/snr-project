@@ -9,7 +9,6 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
-
 public class SecureConnection {
 	private final int port = 2009;
 	private final String host = "localhost";
@@ -21,6 +20,7 @@ public class SecureConnection {
 	private Random rand = new Random();
 	private double na;
 	private String nb;
+	private byte[] buffer = new byte[102400];
 
 	public SecureConnection() {
         try {
@@ -32,7 +32,7 @@ public class SecureConnection {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		bytefill(buffer, (byte) 0x00);
 	}
 	
 	public void initialize(){
@@ -55,13 +55,15 @@ public class SecureConnection {
 // PASSO 2: S -> C | C, S, Ks(C, S, Na, Nb)
     	byte[] byteResp = new byte[128];
     	for (int i = 0; i < byteResp.length; i++) byteResp[i] = (byte) 0x00;
+    	int readed = 0;
     	try {
-			in.read(byteResp);
+			readed = in.read(byteResp);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	byte[] respNoPad = mb.subPad(byteResp);
+    	byte[] respNoPad = new byte[readed];
+    	System.arraycopy(byteResp, 0, respNoPad, 0, respNoPad.length);
     	respNoPad = mb.SessionDecode(respNoPad);
 		response = mb.getStringFromByte(respNoPad);
 		
@@ -113,14 +115,26 @@ public class SecureConnection {
 	}
 	
 	public Object secureReceive(){
-		byte[] word = new byte[153600];
+		int bufferLength = 0;
     	try {
-			in.read(word);
+			bufferLength = in.read(buffer);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	return mb.getStringFromByte(mb.SessionDecode(mb.subPad(word)));
+		byte temp[] = new byte[bufferLength];
+	    System.arraycopy(buffer, 0, temp, 0, temp.length);
+		bytefill(buffer, (byte) 0x00);
+		byte[] decoded = mb.SessionDecode(temp);
+    	return mb.getStringFromByte(decoded);
 	}
+
+	public static void bytefill(byte[] array, byte value) {
+		   int len = array.length;
+		   if (len > 0)
+		   array[0] = value;
+		   for (int i = 1; i < len; i += i)
+		       System.arraycopy( array, 0, array, i, ((len - i) < i) ? (len - i) : i);
+	   }
 
 }
