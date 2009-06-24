@@ -1,44 +1,57 @@
+
 	import java.security.*;
 	import java.security.spec.*;
 	import javax.crypto.*;
 	import javax.crypto.spec.SecretKeySpec;
 	import java.io.*;
 
-
+/**
+ * questa classe contiene tutti i metodi utilizzati per manipolare i dati da inviare e ricevere 
+ * utilizzati nel protocollo e nelle comunicazioni
+ * @author Davide Cui
+ *
+ */
+	
 public class MagicBox {
-	private FileInputStream fis;
-	private ByteArrayOutputStream baos;
-	private byte[] publicKeyBytes;
-	private byte[] privateKeyBytes;
-	private byte[] rawKey;
-	private PublicKey publicKey;
-	private PrivateKey privateKey;
-	private Key sessionKey;
-	private X509EncodedKeySpec ksx509;
-	private PKCS8EncodedKeySpec kspkcs8;
-	private SecretKeySpec sessionKeySpec;
+	private FileInputStream fis; //usato per leggere la chiave
+	private ByteArrayOutputStream baos; 
+	private byte[] publicKeyBytes; //array di byte della chiave pubblica
+	private byte[] privateKeyBytes; //array di bye dela chiave privata
+	private byte[] rawKey; //array di byte della chiave di sessione
+	private X509EncodedKeySpec ksx509; //chiave pubblica in forma trasparente
+	private PKCS8EncodedKeySpec kspkcs8; //chiave privata in forma trasparente
+	private SecretKeySpec sessionKeySpec; //chiave di sessione in forma trasparente
+	private PublicKey publicKey; //chiave pubblica in forma opaca
+	private PrivateKey privateKey; //chiave privata in forma opaca
+	private SecretKey sessionKey; //chiave di sessione in forma opaca
 	private KeyFactory kf;
 	private KeyGenerator kg;
 	private Cipher c;
 	byte[] error = {-1};
 
-
+/**
+ * Istanzia l'oggetto MagicBox
+ * @param pathPub percorso della chiave pubblica del server (obbligatorio)
+ * @param pathPri percorso della chiave privata del server (puo' essere null)
+ * @param sessionKey_enabled se true genererà una chiave di sessione
+ */
 	public MagicBox(String pathPub, String pathPri, boolean sessionKey_enabled){
 		int i;
 		try {
-			kf = KeyFactory.getInstance("RSA");
-			fis = new FileInputStream(pathPub);
+			kf = KeyFactory.getInstance("RSA"); //per la generazione degli oggetti che mi rappresenteranno la chiave pubblica e privata
+			fis = new FileInputStream(pathPub); //accedo alla chiave pubblica
 			baos = new ByteArrayOutputStream();
 			i = 0;
+			//iserisco il contenuto del file all'interno di un buffer
 			while((i = fis.read()) != -1) {
 				baos.write(i);
 			}
 			fis.close();
-			publicKeyBytes = baos.toByteArray();
+			publicKeyBytes = baos.toByteArray(); //sposto il contenuto del buffer in un array
 			baos.close();
-			ksx509 = new X509EncodedKeySpec(publicKeyBytes);
-			publicKey = kf.generatePublic(ksx509);
-			if (pathPri != null){
+			ksx509 = new X509EncodedKeySpec(publicKeyBytes); // creo la chiave trasparente
+			publicKey = kf.generatePublic(ksx509); //creo la chiave pubblica opaca
+			if (pathPri != null){ //se il percorso della chiave privata non è null
 				fis = new FileInputStream(pathPri);
 				baos = new ByteArrayOutputStream();
 				i = 0;
@@ -49,13 +62,13 @@ public class MagicBox {
 				privateKeyBytes = baos.toByteArray();
 				baos.close();
 				kspkcs8 = new PKCS8EncodedKeySpec(privateKeyBytes);
-				privateKey = kf.generatePrivate(kspkcs8);
+				privateKey = kf.generatePrivate(kspkcs8); // ottengo l'oggetto che mi rappresenta la chiave privata
 			}
-			if (sessionKey_enabled){
+			if (sessionKey_enabled){ //se viene richiesta la generazione immediata della chiave di sessione
 				kg = KeyGenerator.getInstance("AES");
-				kg.init(128);
-				sessionKey = kg.generateKey();
-				rawKey = sessionKey.getEncoded();
+				kg.init(128); //la chiave sarà a 128 bit
+				sessionKey = kg.generateKey(); //genero la chiave
+				rawKey = sessionKey.getEncoded(); 
 				sessionKeySpec = new SecretKeySpec(rawKey, "AES");
 			}
 		} catch (Exception e) {
@@ -63,15 +76,28 @@ public class MagicBox {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * genera una chiave AES di sessione partendo da un array di byte
+	 * @param rawKey 
+	 */
 	public void setSessionKey(byte[] rawKey){
 		sessionKeySpec = new SecretKeySpec(rawKey, "AES");
 	}
-	
+
+	/**
+	 * restituisce la chiave di sessione		
+	 * @return
+	 */
 	public byte[] getSessionKey(){
 		return sessionKeySpec.getEncoded();
 	}
-	
+
+	/**
+	 * cifra con la chiave pubblica del server	
+	 * @param plainContent dati da cifrare
+	 * @return i dati cifrati
+	 */
 	public byte[] RSAEncode(byte[] plainContent){
 		byte[] encryptContent = null;
 		
@@ -89,6 +115,11 @@ public class MagicBox {
 
 	}
 	
+	/**
+	 * cifra con la chiave pubblica del server	
+	 * @param plainText testo in chiaro da cifrare
+	 * @return i dati cifrati
+	 */
 	public byte[] RSAEncode(String plainText){
 		char[] plainChar = plainText.toCharArray();
 		byte[] plainByte = new byte[plainChar.length];
@@ -98,6 +129,11 @@ public class MagicBox {
 		return RSAEncode(plainByte);
 	}
 	
+	/**
+	 * decritta con la chiave privata del server
+	 * @param encryptContent dati cifrati
+	 * @return dati decrittati
+	 */
 	public byte[] RSADecode(byte[] encryptContent){
 		byte[] plainContent = null;
 		try {
@@ -113,6 +149,11 @@ public class MagicBox {
 		return error;
 	}
 
+	/**
+	 * cifra con la chiave di sessione
+	 * @param plainContent dati in chiaro
+	 * @return dati cifrati
+	 */
 	public byte[] SessionEncode(byte[] plainContent){
 		byte[] encryptContent = null;
 		try {
@@ -129,6 +170,11 @@ public class MagicBox {
 	}
 	
 	
+	/**
+	 * cifra con la chiave di sessione
+	 * @param plainText testo in chiaro
+	 * @return dati crittati
+	 */
 	public byte[] SessionEncode(String plainText){
 		char[] plainChar = plainText.toCharArray();
 		byte[] plainByte = new byte[plainChar.length];
@@ -139,6 +185,11 @@ public class MagicBox {
 		
 	}
 	
+	/**
+	 * decifra con la chiave di sessione
+	 * @param encryptContent dati cifrati
+	 * @return dati in chiaro
+	 */
 	public byte[] SessionDecode(byte[] encryptContent){
 		byte[] plainContent = null;
 		try {
@@ -154,6 +205,11 @@ public class MagicBox {
 		
 	}
 	
+	/**
+	 * restituisce una stringa da un array di byte
+	 * @param b array di byte
+	 * @return stringa corrispondente
+	 */
 	public String getStringFromByte(byte[] b){
 		char[] c = new char[b.length];
 		for(int i = 0; i < b.length; i++) c[i] = (char) b[i]; 
@@ -161,22 +217,17 @@ public class MagicBox {
 
 	}
 	
+	/**
+	 * concatena due array di byte
+	 * @param A primo array di byte
+	 * @param B secondo array di byte
+	 * @return concatenazione dei due array
+	 */
 	public byte[] concat(byte[] A, byte[] B) {
 		   byte[] C= new byte[A.length+B.length];
 		   System.arraycopy(A, 0, C, 0, A.length);
 		   System.arraycopy(B, 0, C, A.length, B.length);
 		   return C;
 		}
-/*
-	public byte[] subPad(byte[] padded) {
-    	int newlenght = padded.length;
-    	for (int i = padded.length - 1; i > 0; i--){ 
-    		if (padded[i] != (byte) 0x00) break;
-    		newlenght --;
-    	}
-    	byte[] noPadded = new byte[newlenght];
-    	for (int i = 0; i < noPadded.length; i++) noPadded[i] = padded[i];
-    	return noPadded;
-	}
-*/
+
 }
