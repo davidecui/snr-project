@@ -95,13 +95,15 @@ public class ServerThread extends Thread {
 				    	clientLine = mb.SessionEncode(clientLine);
 				    	out.write(clientLine);
 				    	------------------echo*/
-				    	FileInputStream fis = new FileInputStream("../SecureServer/etc/" + r + ".jpg");
-				    	byte[] buffer = new byte[fis.available()];
-				    	fis.read(buffer);
-				    	byte[] encoded = mb.SessionEncode(buffer);
-				    	System.out.println(encoded.length);
-				    	out.write(encoded);
-				    	System.out.println(r+".jpg sent");
+				    	if (!r.equals("Bye")){
+				    		FileInputStream fis = new FileInputStream("../SecureServer/etc/" + r + ".jpg");
+				    		byte[] buffer = new byte[fis.available()];
+				    		fis.read(buffer);
+				    		byte[] encoded = mb.SessionEncode(buffer);
+				    		System.out.println(encoded.length);
+				    		out.write(encoded);
+				    		System.out.println(r+".jpg sent");
+				    	}
 				    } while (!r.equals("Bye"));
 		    	}
 	    	}

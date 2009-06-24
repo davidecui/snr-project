@@ -1,39 +1,40 @@
 package com.secureandclient;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.EditText;
 
+/**
+ * 
+ * @author Davide Cui
+ *
+ */
 public class SecureClient extends Activity {
 	private OnClickListener myOcl;
-	private Button button01, button02, button03;
-	private ImageView image_container;
-	private SecureConnection connection;
-	private BitmapDrawable image;
-	private Thread imgLdr = new Thread(new ImageLoader());
+	private Button confirm, exit;
+	private EditText host, uname, pssw;
+	private Intent menu;
 
     /** Called when the activity is first created. */
-    @Override
+	/**
+	 *     
+	 */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start);
-    	connection = new SecureConnection();
-    	connection.initialize();
+		menu = new Intent(this, Menu.class);
+        
+        host = (EditText) findViewById(R.id.EditHost);
+        uname = (EditText) findViewById(R.id.EditUsername);
+        pssw = (EditText) findViewById(R.id.EditPassword);
+        confirm = (Button) findViewById(R.id.Confirm);
+        exit = (Button) findViewById(R.id.Exit);
 
-    	setContentView(R.layout.main);
-    	image_container = (ImageView) findViewById(R.id.ImageView01);
-    	button01 = (Button) findViewById(R.id.Button01);
-    	button02 = (Button) findViewById(R.id.Button02);
-    	button03 = (Button) findViewById(R.id.Button03);
-    	
-		myOcl = new OnClickListener() {
+        myOcl = new OnClickListener() {
 			// @Override
 			public void onClick(View aView) {
 				Button clickedButton = (Button) aView;
@@ -41,37 +42,21 @@ public class SecureClient extends Activity {
 				int buttonNumber = clickedButton.getId();
 
 				switch (buttonNumber) {
-					case R.id.Button01: 
-						//Log.d("SECURECLIENT", "01");
-			        	connection.secureSend("IMAGE01");
-//			        	imgLdr.start();
-						break;
-				
-					case R.id.Button02: 
-						//Log.d("SECURECLIENT", "02");
-			        	connection.secureSend("IMAGE02");
-						break;
-			
-					case R.id.Button03: 
-						//Log.d("SECURECLIENT", "03");
-			        	connection.secureSend("IMAGE03");
+					case R.id.Confirm:
+						 menu.putExtra("HOST", host.getText().toString());
+						 menu.putExtra("UNAME", uname.getText().toString());
+						 menu.putExtra("PSSW", pssw.getText().toString());
+						 startActivity(menu);
+						 break;
+
+					case R.id.Exit:
+						finish();
 						break;
 				}
-	        	image = new BitmapDrawable((Bitmap) connection.secureReceive());
-				image_container.setImageDrawable(image);
 			}
 		};
-		button01.setOnClickListener(myOcl);
-		button02.setOnClickListener(myOcl);
-		button03.setOnClickListener(myOcl);
+		confirm.setOnClickListener(myOcl);
+		exit.setOnClickListener(myOcl);
     }
-    
-	private class ImageLoader implements Runnable {
-		// @Override
-		public void run() {
-        	image = (BitmapDrawable) connection.secureReceive();
-			image_container.setImageDrawable(image);
-		}
-	}
 
 }

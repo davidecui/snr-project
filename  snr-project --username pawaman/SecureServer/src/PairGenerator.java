@@ -2,7 +2,13 @@ import java.io.FileOutputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 
-
+/**
+ * genera una coppia di chiavi pubblica/privata
+ * la chiave pubblica verrà memorizzata in /etc/publicKey.jks
+ * quella privata in /etc/privateKey.jks
+ * @author Davide Cui
+ *
+ */
 public class PairGenerator {
 
 	/**

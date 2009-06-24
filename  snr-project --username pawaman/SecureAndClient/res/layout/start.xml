@@ -5,6 +5,13 @@
     android:layout_height="fill_parent"
     >
 
-<AbsoluteLayout android:id="@+id/AbsoluteLayout01" android:layout_width="wrap_content" android:layout_height="wrap_content"></AbsoluteLayout>
-<TextView android:text="Initializing Connection..." android:id="@+id/TextView01" android:layout_width="fill_parent" android:layout_height="fill_parent" android:gravity="center"></TextView>
+
+
+<TextView android:layout_height="wrap_content" android:text="Host" android:id="@+id/TextHost" android:layout_width="fill_parent" android:gravity="center" android:paddingTop="10px"></TextView><EditText android:id="@+id/EditHost" android:layout_height="wrap_content" android:layout_width="fill_parent" android:gravity="center" android:text="192.168.0.143"></EditText><TextView android:layout_height="wrap_content" android:layout_width="fill_parent" android:gravity="center" android:paddingTop="10px" android:id="@+id/TextUsername" android:text="Username"></TextView><EditText android:layout_height="wrap_content" android:layout_width="fill_parent" android:gravity="center" android:id="@+id/EditUsername" android:text="utente1"></EditText><TextView android:layout_height="wrap_content" android:layout_width="fill_parent" android:gravity="center" android:paddingTop="10px" android:id="@+id/TextPassword" android:text="Password"></TextView><EditText android:layout_height="wrap_content" android:layout_width="fill_parent" android:gravity="center" android:inputType="textPassword" android:id="@+id/EditPassword" android:text="password1"></EditText>
+
+
+
+
+
+<Button android:layout_height="wrap_content" android:text="Confirm" android:layout_width="fill_parent" android:id="@+id/Confirm"></Button><Button android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/Exit" android:text="Exit"></Button>
 </LinearLayout>
